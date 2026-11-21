@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>claimcheck</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div class="brand">claimcheck <span id="reviewer"></span></div>
+      <div class="progress-wrap">
+        <div class="progress"><span id="progress-bar"></span></div>
+        <div class="progress-text" id="progress-text"></div>
+      </div>
+      <button class="btn small" id="finish" type="button">Finish &amp; close</button>
+    </header>
+
+    <div class="workspace">
+      <aside class="sidebar">
+        <div class="tabs" id="tabs"></div>
+        <div class="scroll" id="queue"></div>
+      </aside>
+
+      <main class="viewer">
+        <div class="viewer-bar">
+          <strong id="doc-id"></strong>
+          <button class="btn small" id="prev" type="button">‹ Previous</button>
+          <button class="btn small" id="next" type="button">Next ›</button>
+          <span class="spacer"></span>
+          <button class="btn primary" id="save" type="button">Save &amp; next</button>
+        </div>
+        <details class="help">
+          <summary>How to review</summary>
+          <ul>
+            <li>Highlighted text is a citation the reference set contains. Skim for citations that are <b>not highlighted</b>: select the text and choose <em>Missed citation</em>.</li>
+            <li>Click a highlight to flag it as <em>not a citation</em>, or to say its <em>link is wrong</em>. For a wrong link, then click the correct entry in the references below.</li>
+            <li>Hover a highlight to see the bibliography entries it links to. Papers with no flags are saved as OK. Use the PDF on the right if the text looks garbled.</li>
+          </ul>
+        </details>
+        <div id="notfound"></div>
+        <div class="text scroll" id="text"></div>
+        <div class="refs-head">References <span id="hover-info"></span></div>
+        <div class="refs scroll" id="refs"></div>
+        <div class="findings" id="findings"></div>
+        <textarea id="note" rows="2" placeholder="Note about this paper (optional)"></textarea>
+      </main>
+
+      <section class="pdf">
+        <iframe id="pdf" title="Original PDF"></iframe>
+      </section>
+    </div>
+  </div>
+
+  <div class="popover" id="popover" hidden></div>
+  <script src="/shared.js"></script>
+  <script src="/validate.js"></script>
+</body>
+</html>

@@ -1,0 +1,69 @@
+* { box-sizing: border-box; }
+body { margin: 0; font: 14px/1.5 -apple-system, "Segoe UI", sans-serif; color: #1b1f24; background: #f4f5f7; }
+.app { display: flex; flex-direction: column; height: 100vh; }
+.topbar { display: flex; align-items: center; gap: 16px; padding: 8px 16px; background: #1b1f24; color: #fff; }
+.brand { font-weight: 600; }
+.brand span { font-weight: 400; opacity: .7; }
+.progress-wrap { flex: 1; display: flex; align-items: center; gap: 12px; }
+.progress { flex: 1; max-width: 360px; height: 8px; background: #3b424a; border-radius: 4px; overflow: hidden; }
+.progress span { display: block; height: 100%; background: #4cc38a; width: 0; }
+.progress-text { font-size: 12px; opacity: .85; }
+
+.workspace { flex: 1; display: grid; grid-template-columns: 210px minmax(0, 1fr) minmax(0, 1fr); min-height: 0; }
+.sidebar { display: flex; flex-direction: column; border-right: 1px solid #d5d9de; background: #fff; min-height: 0; }
+.tabs { display: flex; border-bottom: 1px solid #d5d9de; }
+.tab { flex: 1; padding: 8px 4px; border: 0; background: #f4f5f7; cursor: pointer; font-size: 12px; }
+.tab.active { background: #fff; font-weight: 600; box-shadow: inset 0 -2px #2f6fed; }
+.scroll { overflow: auto; }
+#queue { flex: 1; }
+.item { display: flex; align-items: center; gap: 8px; width: 100%; padding: 5px 12px; border: 0; background: none; text-align: left; cursor: pointer; font-size: 12px; }
+.item:hover { background: #eef1f5; }
+.item.current { background: #dce8ff; font-weight: 600; }
+.dot { width: 8px; height: 8px; border-radius: 50%; background: #c3c8ce; flex: none; }
+.item.ok .dot { background: #2fa36b; }
+.item.issues .dot { background: #e0912f; }
+
+.viewer { display: flex; flex-direction: column; min-width: 0; min-height: 0; padding: 8px 12px; gap: 6px; }
+.viewer-bar { display: flex; align-items: center; gap: 8px; }
+.spacer { flex: 1; }
+.btn { padding: 6px 14px; border: 1px solid #b9bfc7; border-radius: 4px; background: #fff; cursor: pointer; font: inherit; }
+.btn.small { padding: 2px 8px; font-size: 12px; }
+.btn.primary { background: #2f6fed; border-color: #2f6fed; color: #fff; }
+.btn:hover { filter: brightness(.96); }
+.help { font-size: 12px; color: #444c55; }
+.help ul { margin: 4px 0; padding-left: 18px; }
+.unlocated { font-size: 12px; background: #fff7e0; border: 1px solid #ecd68a; border-radius: 4px; padding: 4px 8px; }
+.unlocated ul { max-height: 120px; overflow: auto; margin: 4px 0; }
+
+.text { flex: 3; min-height: 0; padding: 8px 14px; background: #fff; border: 1px solid #d5d9de; border-radius: 4px; }
+.text p { margin: 0 0 .8em; }
+.text p.heading { font-weight: 600; }
+mark.cite { background: #cfe3ff; color: inherit; border-radius: 2px; cursor: pointer; padding: 0 1px; }
+mark.cite:hover { background: #a9ccff; }
+mark.cite.active { background: #7fb2ff; }
+mark.cite.wrong { background: #ffd3d3; text-decoration: line-through; }
+mark.cite.badlink { background: #ffe2b8; outline: 1px dashed #c97a00; }
+.refs-head { font-weight: 600; font-size: 12px; }
+.refs-head span { font-weight: 400; color: #8a5a00; margin-left: 8px; }
+.refs { flex: 2; min-height: 0; padding: 4px 14px; background: #fff; border: 1px solid #d5d9de; border-radius: 4px; font-size: 12px; position: relative; }
+.ref { margin: 0 0 .5em; padding: 2px 4px; border-radius: 3px; cursor: default; }
+.ref.hot { background: #fff1a8; }
+
+.findings { display: flex; flex-direction: column; gap: 4px; max-height: 140px; overflow: auto; }
+.finding { display: flex; align-items: center; gap: 8px; font-size: 12px; padding: 3px 6px; border-radius: 4px; background: #fff; border: 1px solid #d5d9de; }
+.finding .kind { font-weight: 600; flex: none; }
+.finding.missed .kind { color: #b3261e; }
+.finding.wrong_citation .kind { color: #7b3fb2; }
+.finding.bad_link .kind { color: #c97a00; }
+.ftext { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.finding input { width: 160px; }
+.correct { color: #1d6b43; max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+textarea { width: 100%; font: inherit; resize: vertical; }
+
+.pdf { border-left: 1px solid #d5d9de; min-height: 0; }
+.pdf iframe { width: 100%; height: 100%; border: 0; background: #fff; }
+
+.popover { position: fixed; z-index: 10; display: flex; flex-direction: column; gap: 4px; padding: 6px; background: #fff; border: 1px solid #b9bfc7; border-radius: 6px; box-shadow: 0 4px 14px rgba(0, 0, 0, .18); max-width: 260px; }
+.popover[hidden] { display: none; }
+.error { padding: 10px 16px; background: #fde7e7; color: #8a1c1c; }
+.done { margin: 15vh auto; max-width: 480px; text-align: center; }

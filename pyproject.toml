@@ -1,0 +1,41 @@
+[project]
+name = "claimcheck"
+version = "0.1.0"
+description = "Review claim-extraction dev sets: skim each paper with its citations highlighted and flag the mistakes."
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = []
+
+[project.scripts]
+claimcheck = "claimcheck.cli:main"
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "ruff"
+]
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["claimcheck", "claimcheck.*"]
+
+[tool.setuptools.package-data]
+claimcheck = ["reviewer.txt", "web/static/*"]
+
+[tool.pytest.ini_options]
+addopts = "--strict-markers"
+
+[tool.ruff]
+line-length = 120
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+ignore = ["E501"]
+
+[tool.ruff.format]
+indent-style = "space"
+quote-style = "double"

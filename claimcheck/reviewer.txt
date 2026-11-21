@@ -1,0 +1,2 @@
+# Name recorded in the results file. The first line that is not a comment is used.
+Neil Mathias
