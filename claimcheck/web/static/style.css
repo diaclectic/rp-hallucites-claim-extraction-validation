@@ -38,6 +38,9 @@ body { margin: 0; font: 14px/1.5 -apple-system, "Segoe UI", sans-serif; color: #
 .text { flex: 3; min-height: 0; padding: 8px 14px; background: #fff; border: 1px solid #d5d9de; border-radius: 4px; }
 .text p { margin: 0 0 .8em; }
 .text p.heading { font-weight: 600; }
+.citance { background: #fff4c2; border-radius: 2px; }
+.citance-info { padding: 4px 10px; font-size: 13px; background: #fffbea; border-top: 1px solid #eadfa8; }
+.citance-info:empty { display: none; }
 mark.cite { background: #cfe3ff; color: inherit; border-radius: 2px; cursor: pointer; padding: 0 1px; }
 mark.cite:hover { background: #a9ccff; }
 mark.cite.active { background: #7fb2ff; }

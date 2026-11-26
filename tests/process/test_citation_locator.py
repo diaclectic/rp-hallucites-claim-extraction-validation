@@ -156,3 +156,36 @@ def test_an_item_equal_to_the_entry_wins_over_a_fragment_inside_it():
 
 def test_a_footnote_number_does_not_stick_to_the_first_word_of_the_footnote():
     assert CitationLocator().clean("Body text.\n\n<sup>10</sup>Fowlie and Koller (2017) showed it.") == "Body text.\n\nFowlie and Koller (2017) showed it."
+
+
+def test_each_citation_gets_the_citance_that_contains_it():
+    text = "First sentence cites (Doe, 2020). Second sentence (Roe, 2021) is separate. Again (Doe, 2020) here."
+    record = {
+        "citations": [
+            {"surface": "(Doe, 2020)", "count": 2, "citances": ["First sentence cites (Doe, 2020).", "Again (Doe, 2020) here."]},
+            {"surface": "(Roe, 2021)", "count": 1},
+        ],
+        "links": [],
+    }
+    paper = CitationLocator().locate("x", "dev", record, {"sections": [["T", text]], "references": ""})
+    cut = lambda span: text[span["citance"]["start"] : span["citance"]["end"]] if span["citance"] else None
+    assert [cut(s) for s in paper.spans] == ["First sentence cites (Doe, 2020).", None, "Again (Doe, 2020) here."]
+
+
+def test_a_citance_that_runs_across_a_paragraph_break_is_located():
+    record = {"citations": [{"surface": "(Kendall et al., 2018)", "count": 1,
+                             "citances": ["Finally, the loss is the weighted combination (Kendall\n\net al., 2018) of the above."]}], "links": []}
+    source = {"sections": [["T", "Intro.\n\nFinally, the loss is the weighted combination (Kendall\n\net al., 2018) of the above.\n\nNext."]], "references": ""}
+    paper = CitationLocator().locate("x", "dev", record, source)
+    citance = paper.spans[0]["citance"]
+    assert paper.text[citance["start"] : citance["end"]].startswith("Finally") and paper.text[citance["start"] : citance["end"]].endswith("above.")
+
+
+def test_offsets_are_in_utf16_units_because_the_page_counts_them_that_way():
+    text = "😀 see (Doe, 2020) and 𝑥 (Roe, 2021)."
+    record = {"citations": [{"surface": "(Doe, 2020)", "count": 1, "citances": [text]}, {"surface": "(Roe, 2021)", "count": 1}], "links": []}
+    paper = CitationLocator().locate("x", "dev", record, {"sections": [["T", text]], "references": ""})
+    units = text.encode("utf-16-le")
+    cut = lambda start, end: units[2 * start : 2 * end].decode("utf-16-le")
+    assert [cut(s["start"], s["end"]) for s in paper.spans] == ["(Doe, 2020)", "(Roe, 2021)"]
+    assert cut(paper.spans[0]["citance"]["start"], paper.spans[0]["citance"]["end"]) == text

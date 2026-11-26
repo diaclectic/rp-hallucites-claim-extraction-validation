@@ -1,6 +1,8 @@
+import bisect
 import html
 import re
 import unicodedata
+from collections.abc import Callable
 
 from claimcheck.models.paper import Paper
 
@@ -63,6 +65,7 @@ class CitationLocator:
         for citation in record["citations"]:
             surface = self.clean(citation["surface"])
             found = [(m.start(), m.end()) for m in re.finditer(self._pattern(surface), text)]
+            windows = self._citance_windows(citation.get("citances"), text) if found else []
             if not found:
                 unlocated.append(surface)
                 continue
@@ -84,8 +87,17 @@ class CitationLocator:
                 for link, refs in matched
                 if link["key"] in first_authors or all(key[1] != link["key"][1] for key in first_authors)
             ]
-            spans += [{"start": start, "end": end, "surface": surface, "works": works} for start, end in found]
-        return Paper(doc_id, split, text, self._without_overlaps(spans), unlocated, references)
+            spans += [
+                {"start": start, "end": end, "surface": surface, "works": works, "citance": self._enclosing(windows, start, end)}
+                for start, end in found
+            ]
+        spans = self._without_overlaps(spans)
+        utf16 = self._utf16_offsets(text)
+        for span in spans:
+            span["start"], span["end"] = utf16(span["start"]), utf16(span["end"])
+            if span["citance"]:
+                span["citance"] = {key: utf16(value) for key, value in span["citance"].items()}
+        return Paper(doc_id, split, text, spans, unlocated, references)
 
     @staticmethod
     def _pattern(surface: str) -> re.Pattern:
@@ -98,6 +110,44 @@ class CitationLocator:
         after = r"(?!\w)" if surface[-1:].isalnum() else ""
         body = r"\s+".join(re.escape(word) for word in surface.split())
         return re.compile(before + body + after)
+
+    def _citance_windows(self, citances: list[str] | None, text: str) -> list[tuple[int, int]]:
+        """Return where each of a citation's citance sentences lies in the text.
+
+        Args:
+            citances: The sentences (markdown) that contain the citation, from the reference set; may be missing.
+            text: The cleaned paper text.
+
+        Returns:
+            `(start, end)` offsets, one per place a sentence is found. A sentence is cleaned like the text and matches across
+            any whitespace, a paragraph break included.
+        """
+        windows = []
+        for citance in citances or []:
+            words = self.clean(citance).split()
+            if words:
+                pattern = re.compile(r"\s+".join(re.escape(word) for word in words))
+                windows += [(m.start(), m.end()) for m in pattern.finditer(text)]
+        return windows
+
+    @staticmethod
+    def _enclosing(windows: list[tuple[int, int]], start: int, end: int) -> dict | None:
+        """Return the shortest citance window that contains a citation, or None."""
+        inside = [window for window in windows if window[0] <= start and end <= window[1]]
+        if not inside:
+            return None
+        first, last = min(inside, key=lambda window: window[1] - window[0])
+        return {"start": first, "end": last}
+
+    @staticmethod
+    def _utf16_offsets(text: str) -> Callable[[int], int]:
+        """Return a function that turns an offset in `text` (counted in characters) into one the browser uses.
+
+        JavaScript counts UTF-16 units, so every character outside the basic plane (an emoji, a math letter like 𝑥) before
+        an offset adds one.
+        """
+        astral = [index for index, char in enumerate(text) if ord(char) > 0xFFFF]
+        return lambda offset: offset + bisect.bisect_left(astral, offset)
 
     @staticmethod
     def _without_overlaps(spans: list[dict]) -> list[dict]:

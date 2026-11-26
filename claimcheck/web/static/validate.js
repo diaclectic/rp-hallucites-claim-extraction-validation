@@ -5,6 +5,7 @@ const state = {
   split: "dev",
   paper: null, // the loaded paper
   findings: [], // unsaved flags for the loaded paper
+  selected: null, // index of the clicked citation in paper.spans; its citance is shaded
   pending: null, // a bad_link finding waiting for the reviewer to click the correct entry
   dirty: false,
   results_path: "",
@@ -78,7 +79,9 @@ async function openPaper(docId, skipConfirm = false) {
   state.split = paper.split;
   state.findings = paper.result ? paper.result.findings : [];
   state.pending = null;
+  state.selected = null;
   state.dirty = false;
+  $("citance-info").textContent = "";
   $("doc-id").textContent = `${paper.doc_id} (${paper.split})`;
   $("note").value = paper.result ? paper.result.note : "";
   $("pdf").src = `/api/pdf/${encodeURIComponent(paper.doc_id)}`;
@@ -104,27 +107,68 @@ async function openPaper(docId, skipConfirm = false) {
 
 function renderText() {
   const { text, spans } = state.paper;
+  const citance = state.selected === null ? null : spans[state.selected].citance;
   const container = $("text");
   container.replaceChildren();
   let offset = 0;
-  let spanIndex = 0;
+  let first = 0; // the first citation that has not ended before this paragraph
   for (const paragraph of text.split("\n\n")) {
     const end = offset + paragraph.length;
     const node = el("p", { class: paragraph.startsWith("#") ? "heading" : "" });
+    const sink = citanceSink(node, citance);
     let cursor = offset;
-    while (spanIndex < spans.length && spans[spanIndex].start < end) {
-      const span = spans[spanIndex++];
-      node.append(text.slice(cursor, span.start));
-      node.append(citationNode(span, text.slice(span.start, span.end)));
-      cursor = span.end;
+    // A citation can run across a paragraph break (a page or column break inside it): each paragraph gets its part.
+    for (let index = first; index < spans.length && spans[index].start < end; index++) {
+      const span = spans[index];
+      const from = Math.max(span.start, offset);
+      const to = Math.min(span.end, end);
+      addText(sink, text, cursor, from);
+      sink.add(citationNode(span, text.slice(from, to), index), from, to - from);
+      cursor = to;
     }
-    node.append(text.slice(cursor, end));
+    addText(sink, text, cursor, end);
+    while (first < spans.length && spans[first].end <= end) {
+      first++;
+    }
     container.append(node);
     offset = end + 2;
   }
 }
 
-function citationNode(span, surface) {
+// Adds a paragraph's pieces in order, putting the ones inside the selected citation's citance in one shaded span. A citation
+// is never cut: it is shaded whole when it overlaps the citance.
+function citanceSink(paragraph, citance) {
+  let shaded = null;
+  return {
+    citance,
+    add(child, position, length) {
+      if (citance && position < citance.end && position + length > citance.start) {
+        if (!shaded) {
+          shaded = el("span", { class: "citance" });
+          paragraph.append(shaded);
+        }
+        shaded.append(child);
+      } else {
+        shaded = null;
+        paragraph.append(child);
+      }
+    },
+  };
+}
+
+// Adds text[from:to], cut where the citance starts and ends.
+function addText(sink, text, from, to) {
+  const cuts = [from, to];
+  if (sink.citance) {
+    cuts.push(sink.citance.start, sink.citance.end);
+  }
+  const points = [...new Set(cuts.filter((point) => point >= from && point <= to))].sort((a, b) => a - b);
+  for (let i = 0; i + 1 < points.length; i++) {
+    sink.add(document.createTextNode(text.slice(points[i], points[i + 1])), points[i], points[i + 1] - points[i]);
+  }
+}
+
+function citationNode(span, surface, index) {
   const flags = state.findings.filter((f) => f.text === span.surface);
   const wrong = flags.some((f) => f.kind === "wrong_citation");
   const badLink = flags.some((f) => f.kind === "bad_link");
@@ -133,11 +177,40 @@ function citationNode(span, surface) {
     "mark",
     {
       class: `cite${wrong ? " wrong" : ""}${badLink ? " badlink" : ""}${badCitance ? " badcitance" : ""}`,
+      "data-index": index,
       onmouseenter: (event) => showRefs(span, event.currentTarget),
-      onclick: (event) => citationMenu(event, span),
+      onclick: (event) => {
+        citationMenu(event, span); // reads the clicked node, so it runs before the text is redrawn
+        selectCitation(index);
+      },
     },
     surface,
   );
+}
+
+// Shades the citation's citance in the text and shows it under the text.
+function selectCitation(index) {
+  state.selected = index;
+  renderText();
+  const span = state.paper.spans[index];
+  const mark = $("text").querySelector(`mark[data-index="${index}"]`);
+  if (mark) {
+    showRefs(span, mark);
+  }
+  $("citance-info").replaceChildren(
+    el("strong", {}, "Citance: "),
+    span.citance
+      ? state.paper.text.slice(span.citance.start, span.citance.end).replace(/\n\n/g, " ¶ ")
+      : "none recorded for this citation",
+  );
+}
+
+function clearSelection() {
+  if (state.selected !== null) {
+    state.selected = null;
+    $("citance-info").textContent = "";
+    renderText();
+  }
 }
 
 function renderRefs() {
@@ -227,6 +300,7 @@ function citationMenu(event, span) {
   const node = event.currentTarget;
   const flagged = state.findings.filter((f) => f.text === span.surface);
   const where = context(node);
+  const citance = span.citance ? state.paper.text.slice(span.citance.start, span.citance.end) : where;
   openPopover(
     event,
     ...(flagged.length
@@ -236,7 +310,7 @@ function citationMenu(event, span) {
             addFinding({ kind: "wrong_citation", text: span.surface, context: where, work: "", correct_entry: "", note: "" }),
           ),
           popoverButton("Citance is cut off or incomplete", () =>
-            addFinding({ kind: "bad_citance", text: span.surface, context: where, work: "", correct_entry: "", note: "" }),
+            addFinding({ kind: "bad_citance", text: span.surface, context: citance, work: "", correct_entry: "", note: "" }),
           ),
           ...span.works.map((work) =>
             popoverButton(`Link is wrong: ${work.work}`, () => {
@@ -342,6 +416,7 @@ async function main() {
       closePopover();
       state.pending = null;
       renderFindings();
+      clearSelection();
     }
   });
   window.addEventListener("beforeunload", (event) => {

@@ -9,9 +9,10 @@ class Paper:
         doc_id: The paper id, such as `2020.acl-demos.18`.
         split: `dev` or `validation`.
         text: The cleaned OCR text. Paragraphs are separated by a blank line.
-        spans: One per highlighted citation: `start` and `end` offsets into `text`, the `surface`, and its `works`.
-            Each work has `work`, `status`, `entry` (the bibliography text, or None) and `refs` (indexes into
-            `references`).
+        spans: One per highlighted citation: `start` and `end` offsets into `text` (counted in UTF-16 units, as the page
+            counts them), the `surface`, its `works` and its
+            `citance` (`start` and `end` offsets of the sentence that holds the citation, or None). Each work has `work`,
+            `status`, `entry` (the bibliography text, or None) and `refs` (indexes into `references`).
         unlocated: Citation surfaces from the reference set that were not found in `text`.
         references: The bibliography entries, one per item.
     """
