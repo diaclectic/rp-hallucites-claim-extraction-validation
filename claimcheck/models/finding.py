@@ -7,7 +7,8 @@ class Finding:
 
     Attributes:
         kind: `missed` (a citation the reference set lacks), `wrong_citation` (highlighted text that is not a
-            citation) or `bad_link` (a citation linked to the wrong bibliography entry).
+            citation) `bad_link` (a citation linked to the wrong bibliography entry) or `bad_citance` (a citation whose
+            citance is cut off or incomplete).
         text: The missed text, or the surface of the highlighted citation.
         context: The paragraph around the text, to find it again.
         work: For `bad_link`, the cited work the link is wrong for.
@@ -15,7 +16,7 @@ class Finding:
         note: Anything else the reviewer wants to say.
     """
 
-    KINDS = ("missed", "wrong_citation", "bad_link")
+    KINDS = ("missed", "wrong_citation", "bad_link", "bad_citance")
 
     kind: str
     text: str

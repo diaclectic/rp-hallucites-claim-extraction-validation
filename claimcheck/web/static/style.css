@@ -42,6 +42,7 @@ mark.cite { background: #cfe3ff; color: inherit; border-radius: 2px; cursor: poi
 mark.cite:hover { background: #a9ccff; }
 mark.cite.active { background: #7fb2ff; }
 mark.cite.wrong { background: #ffd3d3; text-decoration: line-through; }
+mark.cite.badcitance { background: #e6d9ff; outline: 1px dashed #6b4bc2; }
 mark.cite.badlink { background: #ffe2b8; outline: 1px dashed #c97a00; }
 .refs-head { font-weight: 600; font-size: 12px; }
 .refs-head span { font-weight: 400; color: #8a5a00; margin-left: 8px; }

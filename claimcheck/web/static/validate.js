@@ -128,10 +128,11 @@ function citationNode(span, surface) {
   const flags = state.findings.filter((f) => f.text === span.surface);
   const wrong = flags.some((f) => f.kind === "wrong_citation");
   const badLink = flags.some((f) => f.kind === "bad_link");
+  const badCitance = flags.some((f) => f.kind === "bad_citance");
   return el(
     "mark",
     {
-      class: `cite${wrong ? " wrong" : ""}${badLink ? " badlink" : ""}`,
+      class: `cite${wrong ? " wrong" : ""}${badLink ? " badlink" : ""}${badCitance ? " badcitance" : ""}`,
       onmouseenter: (event) => showRefs(span, event.currentTarget),
       onclick: (event) => citationMenu(event, span),
     },
@@ -234,6 +235,9 @@ function citationMenu(event, span) {
           popoverButton("Not a citation", () =>
             addFinding({ kind: "wrong_citation", text: span.surface, context: where, work: "", correct_entry: "", note: "" }),
           ),
+          popoverButton("Citance is cut off or incomplete", () =>
+            addFinding({ kind: "bad_citance", text: span.surface, context: where, work: "", correct_entry: "", note: "" }),
+          ),
           ...span.works.map((work) =>
             popoverButton(`Link is wrong: ${work.work}`, () => {
               const finding = {
@@ -263,7 +267,7 @@ function selectionMenu(event) {
   );
 }
 
-const KIND_LABELS = { missed: "Missed", wrong_citation: "Not a citation", bad_link: "Wrong link" };
+const KIND_LABELS = { missed: "Missed", wrong_citation: "Not a citation", bad_link: "Wrong link", bad_citance: "Bad citance" };
 
 function renderFindings() {
   $("findings").replaceChildren(

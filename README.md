@@ -6,6 +6,7 @@ citation in the reference set highlighted, beside the original PDF. You skim for
 - **Missed citation**: a citation in the text that is not highlighted. Select the text and choose *Missed citation*.
 - **Not a citation**: a highlight that is not a citation. Click it.
 - **Link is wrong**: a citation linked to the wrong bibliography entry. Click it, then click the right entry in the references.
+- **Citance is cut off or incomplete**: click the citation and choose it.
 
 Hovering a highlight shows the bibliography entries it links to. Papers saved with no flags count as OK.
 
@@ -61,7 +62,7 @@ One JSON line per reviewed paper:
  "correct_entry": "", "note": ""}], "note": ""}
 ```
 
-`kind` is `missed`, `wrong_citation` or `bad_link`. `status` is `issues` if there are findings and `ok` if not.
+`kind` is `missed`, `wrong_citation`, `bad_link` or `bad_citance`. `status` is `issues` if there are findings and `ok` if not.
 
 ## Development
 
